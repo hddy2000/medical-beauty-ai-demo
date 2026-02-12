@@ -54,7 +54,7 @@ export default function ReportsPage() {
   return (
     <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)', color: '#fff', fontFamily: 'system-ui, sans-serif' }}>
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 40px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-        <div style={{ fontSize: '24px', fontWeight: 'bold' }}>馃敩 MediVision AI</div>
+        <div style={{ fontSize: '24px', fontWeight: 'bold' }}>🔬 MediVision AI</div>
         <nav style={{ display: 'flex', gap: '20px' }}>
           <a href="/" style={{ color: '#94a3b8', textDecoration: 'none' }}>Analysis</a>
           <a href="/reports" style={{ color: '#60a5fa', textDecoration: 'none' }}>Reports</a>
@@ -64,12 +64,12 @@ export default function ReportsPage() {
       <main style={{ maxWidth: '1000px', margin: '0 auto', padding: '40px 20px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
           <h1 style={{ fontSize: '32px', margin: 0 }}>Analysis Reports</h1>
-          <a href="/" style={{ color: '#60a5fa', textDecoration: 'none' }}>鈫?New Analysis</a>
+          <a href="/" style={{ color: '#60a5fa', textDecoration: 'none' }}>← New Analysis</a>
         </div>
 
         {reports.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '80px', background: 'rgba(255,255,255,0.05)', borderRadius: '20px' }}>
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>馃搵</div>
+            <div style={{ fontSize: '48px', marginBottom: '16px' }}>📋</div>
             <h3 style={{ marginBottom: '8px' }}>No Reports Yet</h3>
             <p style={{ color: '#94a3b8', marginBottom: '20px' }}>Start your first analysis</p>
             <a href="/" style={{ display: 'inline-block', padding: '12px 24px', background: 'linear-gradient(135deg, #3b82f6, #8b5cf6)', color: '#fff', textDecoration: 'none', borderRadius: '8px' }}>Start Analysis</a>
@@ -132,12 +132,13 @@ export default function ReportsPage() {
                     color: report.doctorReview?.status === 'confirmed' ? '#34d399' :
                            report.doctorReview?.status === 'rejected' ? '#f87171' : '#fbbf24'
                   }}>
-                    {report.doctorReview?.status === 'confirmed' ? '鉁?Confirmed' :
-                     report.doctorReview?.status === 'rejected' ? '鉁?Rejected' : '鈴?Pending'}
+                    {report.doctorReview?.status === 'confirmed' ? '✓ Confirmed' :
+                     report.doctorReview?.status === 'rejected' ? '✗ Rejected' : '⏳ Pending'}
                   </span>
                   
                   <a href={report.videoUrl} target="_blank" rel="noopener noreferrer" style={{ color: '#60a5fa', textDecoration: 'none', fontSize: '14px' }}>
-                    View Video 鈫?                  </a>
+                    View Video →
+                  </a>
                 </div>
               </div>
             ))}
