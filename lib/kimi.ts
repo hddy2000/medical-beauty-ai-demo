@@ -27,19 +27,17 @@ export async function analyzeWithKimi(videoUrl: string, patientDesc: string): Pr
     throw new Error('KIMI_API_KEY not set');
   }
 
-  const prompt = `你是一位专业的医美术后恢复评估AI助手。请基于以下信息进行分析：
+  const prompt = `浣犳槸涓€浣嶄笓涓氱殑鍖荤編鏈悗鎭㈠璇勪及AI鍔╂墜銆傝鍩轰簬浠ヤ笅淇℃伅杩涜鍒嗘瀽锛?
+銆愯棰戜俊鎭€?- 瑙嗛URL: ${videoUrl}
+- 鎮ｈ€呮弿杩? ${patientDesc || '鏃?}
 
-【视频信息】
-- 视频URL: ${videoUrl}
-- 患者描述: ${patientDesc || '无'}
-
-请提供以下JSON格式的分析结果（只返回JSON，不要有其他文字）：
+璇锋彁渚涗互涓婮SON鏍煎紡鐨勫垎鏋愮粨鏋滐紙鍙繑鍥濲SON锛屼笉瑕佹湁鍏朵粬鏂囧瓧锛夛細
 {
-  "summary": "总体评估摘要（50字以内）",
+  "summary": "鎬讳綋璇勪及鎽樿锛?0瀛椾互鍐咃級",
   "symmetry": {
     "score": 85,
     "status": "normal",
-    "description": "面部对称性评估"
+    "description": "闈㈤儴瀵圭О鎬ц瘎浼?
   },
   "redness": {
     "detected": false,
@@ -55,11 +53,9 @@ export async function analyzeWithKimi(videoUrl: string, patientDesc: string): Pr
   "needReview": false
 }
 
-注意：
-1. riskLevel 只能是 low、medium、high 之一
-2. severity 只能是 none、mild、moderate、severe 之一
-3. confidence 是 0-1 之间的数字
-4. needReview 表示是否需要人工复核`;
+娉ㄦ剰锛?1. riskLevel 鍙兘鏄?low銆乵edium銆乭igh 涔嬩竴
+2. severity 鍙兘鏄?none銆乵ild銆乵oderate銆乻evere 涔嬩竴
+3. confidence 鏄?0-1 涔嬮棿鐨勬暟瀛?4. needReview 琛ㄧず鏄惁闇€瑕佷汉宸ュ鏍竊;
 
   const response = await fetch(KIMI_API_URL, {
     method: 'POST',
@@ -72,14 +68,14 @@ export async function analyzeWithKimi(videoUrl: string, patientDesc: string): Pr
       messages: [
         {
           role: 'system',
-          content: '你是一位专业的医美术后恢复评估AI助手，擅长分析面部对称性、红肿、肿胀等指标。'
+          content: '浣犳槸涓€浣嶄笓涓氱殑鍖荤編鏈悗鎭㈠璇勪及AI鍔╂墜锛屾搮闀垮垎鏋愰潰閮ㄥ绉版€с€佺孩鑲裤€佽偪鑳€绛夋寚鏍囥€?
         },
         {
           role: 'user',
           content: prompt
         }
       ],
-      temperature: 0.7,
+      temperature: 1,
       max_tokens: 1000,
     }),
   });
@@ -92,7 +88,7 @@ export async function analyzeWithKimi(videoUrl: string, patientDesc: string): Pr
   const data = await response.json();
   const content = data.choices[0]?.message?.content;
 
-  // 提取 JSON
+  // 鎻愬彇 JSON
   const jsonMatch = content.match(/\{[\s\S]*\}/);
   if (jsonMatch) {
     return JSON.parse(jsonMatch[0]);
