@@ -1,5 +1,6 @@
 'use client';
 
+// Build: v2 - inline styles only
 import { useState } from 'react';
 
 export default function Home() {
@@ -59,7 +60,7 @@ export default function Home() {
   return (
     <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)', color: '#fff', fontFamily: 'system-ui, sans-serif' }}>
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 40px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-        <div style={{ fontSize: '24px', fontWeight: 'bold' }}>馃敩 MediVision AI</div>
+        <div style={{ fontSize: '24px', fontWeight: 'bold' }}>🔬 MediVision AI</div>
         <nav style={{ display: 'flex', gap: '20px' }}>
           <a href="/" style={{ color: '#60a5fa', textDecoration: 'none' }}>Analysis</a>
           <a href="/reports" style={{ color: '#94a3b8', textDecoration: 'none' }}>Reports</a>
@@ -172,7 +173,7 @@ export default function Home() {
 
               <p style={{ color: '#e2e8f0', marginBottom: '16px' }}>{result.aiResult?.summary}</p>
               
-              <a href="/reports" style={{ color: '#60a5fa', textDecoration: 'none' }}>View Full Report 鈫?/a>
+              <a href="/reports" style={{ color: '#60a5fa', textDecoration: 'none' }}>View Full Report →</a>
             </div>
           )}
         </div>
