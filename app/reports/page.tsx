@@ -3,197 +3,6 @@
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 
-export default function ReportsPage() {
-  const [reports, setReports] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-    fetchReports();
-  }, []);
-
-  const fetchReports = async () => {
-    try {
-      const response = await fetch('/api/reports');
-      const data = await response.json();
-      if (data.success) {
-        setReports(data.data);
-      }
-    } catch (error) {
-      console.error('Failed to fetch reports:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getRiskColor = (level: string) => {
-    switch (level) {
-      case 'high': return '#ef4444';
-      case 'medium': return '#f59e0b';
-      case 'low': return '#10b981';
-      default: return '#6b7280';
-    }
-  };
-
-  const getRiskText = (level: string) => {
-    switch (level) {
-      case 'high': return 'High Risk';
-      case 'medium': return 'Medium Risk';
-      case 'low': return 'Low Risk';
-      default: return 'Unknown';
-    }
-  };
-
-  if (loading) {
-    return (
-      <div style={styles.container}>
-        <div style={styles.loading}>
-          <div style={styles.spinner} />
-          <p>Loading reports...</p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div style={styles.container}>
-      {/* Animated background */}
-      <div style={styles.bgAnimation} />
-      
-      {/* Header */}
-      <header style={styles.header}>
-        <div style={styles.logo}>
-          <span style={styles.logoIcon}>馃敩</span>
-          <span style={styles.logoText}>MediVision AI</span>
-        </div>
-        <nav style={styles.nav}>
-          <a href="/" style={styles.navLink}>Analysis</a>
-          <a href="/reports" style={{...styles.navLink, color: '#60a5fa'}}>Reports</a>
-        </nav>
-      </header>
-
-      <main style={styles.main}>
-        <div style={{
-          ...styles.card,
-          opacity: mounted ? 1 : 0,
-          transform: mounted ? 'translateY(0)' : 'translateY(20px)',
-          transition: 'all 0.6s ease-out'
-        }}>
-          
-          <div style={styles.headerSection}>
-            <h1 style={styles.title}>Analysis Reports</h1>
-            <a href="/" style={styles.backLink}>鈫?New Analysis</a>
-          </div>
-
-          {reports.length === 0 ? (
-            <div style={styles.empty}>
-              <span style={styles.emptyIcon}>馃搵</span>
-              <h3 style={styles.emptyTitle}>No Reports Yet</h3>
-              <p style={styles.emptyText}>Start your first analysis to see results here</p>
-              <a href="/" style={styles.button}>Start Analysis</a>
-            </div>
-          ) : (
-            <div style={styles.reportsGrid}>
-              {reports.map((report, index) => (
-                <div 
-                  key={report._id} 
-                  style={{
-                    ...styles.reportCard,
-                    opacity: mounted ? 1 : 0,
-                    transform: mounted ? 'translateY(0)' : 'translateY(20px)',
-                    transition: `all 0.5s ease-out ${index * 0.1}s`
-                  }}
-                >
-                  <div style={styles.cardHeader}>
-                    <div>
-                      <h3 style={styles.patientId}>{report.patientId}</h3>
-                      <p style={styles.date}>
-                        {format(new Date(report.createdAt), 'MMM dd, yyyy HH:mm')}
-                      </p>
-                    </div>
-                    <span style={{
-                      ...styles.riskBadge,
-                      background: `${getRiskColor(report.aiResult?.riskLevel)}20`,
-                      color: getRiskColor(report.aiResult?.riskLevel),
-                      borderColor: getRiskColor(report.aiResult?.riskLevel)
-                    }}>
-                      {getRiskText(report.aiResult?.riskLevel)}
-                    </span>
-                  </div>
-
-                  <div style={styles.metrics}>
-                    <div style={styles.metric}>
-                      <span style={styles.metricValue}>{report.aiResult?.symmetry?.score || '-'}</span>
-                      <span style={styles.metricLabel}>Symmetry</span>
-                    </div>
-                    <div style={styles.metric}>
-                      <span style={{...styles.metricValue, color: report.aiResult?.redness?.detected ? '#ef4444' : '#10b981'}}>
-                        {report.aiResult?.redness?.detected ? 'Yes' : 'No'}
-                      </span>
-                      <span style={styles.metricLabel}>Redness</span>
-                    </div>
-                    <div style={styles.metric}>
-                      <span style={{...styles.metricValue, color: report.aiResult?.swelling?.detected ? '#ef4444' : '#10b981'}}>
-                        {report.aiResult?.swelling?.detected ? 'Yes' : 'No'}
-                      </span>
-                      <span style={styles.metricLabel}>Swelling</span>
-                    </div>
-                    <div style={styles.metric}>
-                      <span style={styles.metricValue}>
-                        {Math.round((report.aiResult?.confidence || 0) * 100)}%
-                      </span>
-                      <span style={styles.metricLabel}>Confidence</span>
-                    </div>
-                  </div>
-
-                  <div style={styles.summary}>
-                    <p style={styles.summaryText}>{report.aiResult?.summary}</p>
-                  </div>
-
-                  <div style={styles.cardFooter}>
-                    <span style={{
-                      ...styles.statusBadge,
-                      background: report.doctorReview?.status === 'confirmed' ? 'rgba(16, 185, 129, 0.2)' :
-                                  report.doctorReview?.status === 'rejected' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(245, 158, 11, 0.2)',
-                      color: report.doctorReview?.status === 'confirmed' ? '#34d399' :
-                             report.doctorReview?.status === 'rejected' ? '#f87171' : '#fbbf24'
-                    }}>
-                      {report.doctorReview?.status === 'confirmed' ? '鉁?Confirmed' :
-                       report.doctorReview?.status === 'rejected' ? '鉁?Rejected' : '鈴?Pending Review'}
-                    </span>
-                    
-                    <a 
-                      href={report.videoUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={styles.videoLink}
-                    >
-                      View Video 鈫?                    </a>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </main>
-
-      <footer style={styles.footer}>
-        <p style={styles.footerText}>
-          Powered by Advanced AI 鈥?Secure & HIPAA Compliant
-        </p>
-      </footer>
-
-      <style jsx global>{`
-        @keyframes gradient {
-          0%, 100% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-        }
-      `}</style>
-    </div>
-  );
-}
-
 const styles: Record<string, React.CSSProperties> = {
   container: {
     minHeight: '100vh',
@@ -428,3 +237,192 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: 14,
   },
 };
+
+export default function ReportsPage() {
+  const [reports, setReports] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    fetchReports();
+  }, []);
+
+  const fetchReports = async () => {
+    try {
+      const response = await fetch('/api/reports');
+      const data = await response.json();
+      if (data.success) {
+        setReports(data.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch reports:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getRiskColor = (level: string) => {
+    switch (level) {
+      case 'high': return '#ef4444';
+      case 'medium': return '#f59e0b';
+      case 'low': return '#10b981';
+      default: return '#6b7280';
+    }
+  };
+
+  const getRiskText = (level: string) => {
+    switch (level) {
+      case 'high': return 'High Risk';
+      case 'medium': return 'Medium Risk';
+      case 'low': return 'Low Risk';
+      default: return 'Unknown';
+    }
+  };
+
+  if (loading) {
+    return (
+      <div style={styles.container}>
+        <div style={styles.loading}>
+          <div style={styles.spinner} />
+          <p>Loading reports...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={styles.container}>
+      <div style={styles.bgAnimation} />
+      
+      <header style={styles.header}>
+        <div style={styles.logo}>
+          <span style={styles.logoIcon}>馃敩</span>
+          <span style={styles.logoText}>MediVision AI</span>
+        </div>
+        <nav style={styles.nav}>
+          <a href="/" style={styles.navLink}>Analysis</a>
+          <a href="/reports" style={{...styles.navLink, color: '#60a5fa'}}>Reports</a>
+        </nav>
+      </header>
+
+      <main style={styles.main}>
+        <div style={{
+          ...styles.card,
+          opacity: mounted ? 1 : 0,
+          transform: mounted ? 'translateY(0)' : 'translateY(20px)',
+          transition: 'all 0.6s ease-out'
+        }}>
+          
+          <div style={styles.headerSection}>
+            <h1 style={styles.title}>Analysis Reports</h1>
+            <a href="/" style={styles.backLink}>鈫?New Analysis</a>
+          </div>
+
+          {reports.length === 0 ? (
+            <div style={styles.empty}>
+              <span style={styles.emptyIcon}>馃搵</span>
+              <h3 style={styles.emptyTitle}>No Reports Yet</h3>
+              <p style={styles.emptyText}>Start your first analysis to see results here</p>
+              <a href="/" style={styles.button}>Start Analysis</a>
+            </div>
+          ) : (
+            <div style={styles.reportsGrid}>
+              {reports.map((report, index) => (
+                <div 
+                  key={report._id} 
+                  style={{
+                    ...styles.reportCard,
+                    opacity: mounted ? 1 : 0,
+                    transform: mounted ? 'translateY(0)' : 'translateY(20px)',
+                    transition: `all 0.5s ease-out ${index * 0.1}s`
+                  }}
+                >
+                  <div style={styles.cardHeader}>
+                    <div>
+                      <h3 style={styles.patientId}>{report.patientId}</h3>
+                      <p style={styles.date}>
+                        {format(new Date(report.createdAt), 'MMM dd, yyyy HH:mm')}
+                      </p>
+                    </div>
+                    <span style={{
+                      ...styles.riskBadge,
+                      background: `${getRiskColor(report.aiResult?.riskLevel)}20`,
+                      color: getRiskColor(report.aiResult?.riskLevel),
+                      borderColor: getRiskColor(report.aiResult?.riskLevel)
+                    }}>
+                      {getRiskText(report.aiResult?.riskLevel)}
+                    </span>
+                  </div>
+
+                  <div style={styles.metrics}>
+                    <div style={styles.metric}>
+                      <span style={styles.metricValue}>{report.aiResult?.symmetry?.score || '-'}</span>
+                      <span style={styles.metricLabel}>Symmetry</span>
+                    </div>
+                    <div style={styles.metric}>
+                      <span style={{...styles.metricValue, color: report.aiResult?.redness?.detected ? '#ef4444' : '#10b981'}}>
+                        {report.aiResult?.redness?.detected ? 'Yes' : 'No'}
+                      </span>
+                      <span style={styles.metricLabel}>Redness</span>
+                    </div>
+                    <div style={styles.metric}>
+                      <span style={{...styles.metricValue, color: report.aiResult?.swelling?.detected ? '#ef4444' : '#10b981'}}>
+                        {report.aiResult?.swelling?.detected ? 'Yes' : 'No'}
+                      </span>
+                      <span style={styles.metricLabel}>Swelling</span>
+                    </div>
+                    <div style={styles.metric}>
+                      <span style={styles.metricValue}>
+                        {Math.round((report.aiResult?.confidence || 0) * 100)}%
+                      </span>
+                      <span style={styles.metricLabel}>Confidence</span>
+                    </div>
+                  </div>
+
+                  <div style={styles.summary}>
+                    <p style={styles.summaryText}>{report.aiResult?.summary}</p>
+                  </div>
+
+                  <div style={styles.cardFooter}>
+                    <span style={{
+                      ...styles.statusBadge,
+                      background: report.doctorReview?.status === 'confirmed' ? 'rgba(16, 185, 129, 0.2)' :
+                                  report.doctorReview?.status === 'rejected' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(245, 158, 11, 0.2)',
+                      color: report.doctorReview?.status === 'confirmed' ? '#34d399' :
+                             report.doctorReview?.status === 'rejected' ? '#f87171' : '#fbbf24'
+                    }}>
+                      {report.doctorReview?.status === 'confirmed' ? '鉁?Confirmed' :
+                       report.doctorReview?.status === 'rejected' ? '鉁?Rejected' : '鈴?Pending Review'}
+                    </span>
+                    
+                    <a 
+                      href={report.videoUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={styles.videoLink}
+                    >
+                      View Video 鈫?                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
+
+      <footer style={styles.footer}>
+        <p style={styles.footerText}>
+          Powered by Advanced AI 鈥?Secure & HIPAA Compliant
+        </p>
+      </footer>
+
+      <style jsx global>{`
+        @keyframes gradient {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+      `}</style>
+    </div>
+  );
+}
