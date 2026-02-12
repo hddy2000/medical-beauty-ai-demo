@@ -1,5 +1,6 @@
 'use client';
 
+// Force rebuild: CSS Modules version
 import { useState, useEffect } from 'react';
 import styles from './page.module.css';
 
