@@ -23,9 +23,14 @@ export interface AnalysisResult {
 }
 
 export async function analyzeWithKimi(videoUrl: string, patientDesc: string): Promise<AnalysisResult> {
+  console.log('Kimi function called with:', { videoUrl: videoUrl.substring(0, 50), patientDesc });
+  
   if (!KIMI_API_KEY) {
+    console.error('KIMI_API_KEY is not set');
     throw new Error('KIMI_API_KEY not set');
   }
+  
+  console.log('KIMI_API_KEY exists, length:', KIMI_API_KEY.length);
 
   const prompt = `You are a professional medical beauty post-operative recovery assessment AI assistant. Please analyze based on the following information:
 
@@ -61,42 +66,77 @@ Notes:
 3. confidence is a number between 0-1
 4. needReview indicates whether manual review is required`;
 
-  const response = await fetch(KIMI_API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${KIMI_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: 'kimi-k2.5',
-      messages: [
-        {
-          role: 'system',
-          content: 'You are a professional medical beauty post-operative recovery assessment AI assistant, specializing in analyzing facial symmetry, redness, swelling and other indicators.'
-        },
-        {
-          role: 'user',
-          content: prompt
-        }
-      ],
-      temperature: 1,
-      max_tokens: 1000,
-    }),
-  });
+  const requestBody = {
+    model: 'kimi-k2.5',
+    messages: [
+      {
+        role: 'system',
+        content: 'You are a professional medical beauty post-operative recovery assessment AI assistant, specializing in analyzing facial symmetry, redness, swelling and other indicators.'
+      },
+      {
+        role: 'user',
+        content: prompt
+      }
+    ],
+    temperature: 1,
+    max_tokens: 1000,
+  };
+  
+  console.log('Preparing Kimi API request...');
 
-  if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Kimi API error: ${error}`);
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+    
+    console.log('Sending request to Kimi API...');
+    
+    const response = await fetch(KIMI_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${KIMI_API_KEY}`,
+      },
+      body: JSON.stringify(requestBody),
+      signal: controller.signal,
+    });
+    
+    clearTimeout(timeoutId);
+    
+    console.log('Kimi API response status:', response.status);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Kimi API error response:', errorText);
+      throw new Error(`Kimi API error: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    console.log('Kimi API response parsed');
+    
+    const content = data.choices?.[0]?.message?.content;
+    
+    if (!content) {
+      console.error('No content in response:', data);
+      throw new Error('No content in Kimi response');
+    }
+    
+    console.log('Response content:', content.substring(0, 200));
+
+    // Extract JSON
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      console.log('JSON extracted successfully');
+      return JSON.parse(jsonMatch[0]);
+    }
+    
+    console.error('No JSON found in content');
+    throw new Error('Invalid response format from Kimi');
+    
+  } catch (error: any) {
+    console.error('Kimi API call failed:', error.name, error.message);
+    if (error.name === 'AbortError') {
+      throw new Error('Kimi API timeout (30s)');
+    }
+    throw error;
   }
-
-  const data = await response.json();
-  const content = data.choices[0]?.message?.content;
-
-  // Extract JSON
-  const jsonMatch = content.match(/\{[\s\S]*\}/);
-  if (jsonMatch) {
-    return JSON.parse(jsonMatch[0]);
-  }
-
-  throw new Error('Invalid response format from Kimi');
 }
