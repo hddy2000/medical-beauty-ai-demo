@@ -14,7 +14,27 @@ export async function POST(request: Request) {
       );
     }
 
+    // Check env vars
+    const hasKimiKey = !!process.env.KIMI_API_KEY;
+    const hasMongoUri = !!process.env.MONGODB_URI;
+    
+    if (!hasKimiKey) {
+      return NextResponse.json(
+        { error: 'Server config error: KIMI_API_KEY not set' },
+        { status: 500 }
+      );
+    }
+
+    if (!hasMongoUri) {
+      return NextResponse.json(
+        { error: 'Server config error: MONGODB_URI not set' },
+        { status: 500 }
+      );
+    }
+
+    console.log('Connecting to MongoDB...');
     await connectDB();
+    console.log('MongoDB connected');
 
     // Create analysis record
     const analysis = await Analysis.create({
@@ -25,8 +45,10 @@ export async function POST(request: Request) {
     });
 
     try {
+      console.log('Calling Kimi AI...');
       // Call Kimi AI
       const aiResult = await analyzeWithKimi(videoUrl, description);
+      console.log('Kimi AI response received');
 
       // Update record with AI result
       analysis.aiResult = aiResult;
@@ -38,7 +60,9 @@ export async function POST(request: Request) {
         success: true,
         data: analysis,
       });
-    } catch (aiError) {
+    } catch (aiError: any) {
+      console.error('Kimi AI Error:', aiError);
+      
       // Mark as failed but return the record
       analysis.status = 'failed';
       await analysis.save();
@@ -46,16 +70,20 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { 
           error: 'AI analysis failed',
-          details: (aiError as Error).message,
+          details: aiError.message || 'Unknown error',
+          stack: aiError.stack || '',
           data: analysis,
         },
         { status: 500 }
       );
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Analyze error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        error: 'Internal server error',
+        details: error.message || 'Unknown error'
+      },
       { status: 500 }
     );
   }
