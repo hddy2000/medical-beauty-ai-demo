@@ -2,253 +2,6 @@
 
 import { useState, useEffect } from 'react';
 
-export default function Home() {
-  const [videoUrl, setVideoUrl] = useState(
-    process.env.NEXT_PUBLIC_DEMO_VIDEO_URL || 
-    'https://videos.pexels.com/video-files/10677463/10677463-hd_1920_1080_30fps.mp4'
-  );
-  const [patientId, setPatientId] = useState('P001');
-  const [description, setDescription] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<any>(null);
-  const [error, setError] = useState('');
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const handleAnalyze = async () => {
-    setLoading(true);
-    setError('');
-    setResult(null);
-
-    try {
-      const response = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ videoUrl, patientId, description }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        setResult(data.data);
-      } else {
-        setError(data.error || 'Analysis failed');
-      }
-    } catch (err) {
-      setError('Network error');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getRiskColor = (level: string) => {
-    switch (level) {
-      case 'high': return '#ef4444';
-      case 'medium': return '#f59e0b';
-      case 'low': return '#10b981';
-      default: return '#6b7280';
-    }
-  };
-
-  const getRiskText = (level: string) => {
-    switch (level) {
-      case 'high': return 'High Risk';
-      case 'medium': return 'Medium Risk';
-      case 'low': return 'Low Risk';
-      default: return 'Unknown';
-    }
-  };
-
-  return (
-    <div style={styles.container}>
-      {/* Animated background */}
-      <div style={styles.bgAnimation} />
-      
-      {/* Header */}
-      <header style={styles.header}>
-        <div style={styles.logo}>
-          <span style={styles.logoIcon}>馃敩</span>
-          <span style={styles.logoText}>MediVision AI</span>
-        </div>
-        <nav style={styles.nav}>
-          <a href="/" style={{...styles.navLink, color: '#60a5fa'}}>Analysis</a>
-          <a href="/reports" style={styles.navLink}>Reports</a>
-        </nav>
-      </header>
-
-      {/* Main Content */}
-      <main style={styles.main}>
-        <div style={{
-          ...styles.card,
-          opacity: mounted ? 1 : 0,
-          transform: mounted ? 'translateY(0)' : 'translateY(20px)',
-          transition: 'all 0.6s ease-out'
-        }}>
-          
-          {/* Title Section */}
-          <div style={styles.titleSection}>
-            <h1 style={styles.title}>
-              AI-Powered
-              <span style={styles.titleGradient}> Medical Analysis</span>
-            </h1>
-            <p style={styles.subtitle}>
-              Advanced facial analysis for post-operative recovery assessment
-            </p>
-          </div>
-
-          {/* Input Section */}
-          <div style={styles.formGrid}>
-            <div style={styles.inputGroup}>
-              <label style={styles.label}>Patient ID</label>
-              <input
-                type="text"
-                value={patientId}
-                onChange={(e) => setPatientId(e.target.value)}
-                style={styles.input}
-                placeholder="Enter patient identifier"
-              />
-            </div>
-
-            <div style={{...styles.inputGroup, gridColumn: 'span 2'}}>
-              <label style={styles.label}>Video Source URL</label>
-              <input
-                type="text"
-                value={videoUrl}
-                onChange={(e) => setVideoUrl(e.target.value)}
-                style={styles.input}
-                placeholder="https://example.com/video.mp4"
-              />
-            </div>
-
-            <div style={{...styles.inputGroup, gridColumn: 'span 2'}}>
-              <label style={styles.label}>Clinical Notes (Optional)</label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                style={{...styles.input, minHeight: 80, resize: 'vertical'}}
-                placeholder="Post-operative day 3, patient reports mild discomfort..."
-              />
-            </div>
-          </div>
-
-          {/* Video Preview */}
-          {videoUrl && (
-            <div style={{
-              ...styles.videoContainer,
-              opacity: mounted ? 1 : 0,
-              transition: 'opacity 0.8s ease-out 0.2s'
-            }}>
-              <video
-                src={videoUrl}
-                controls
-                style={styles.video}
-              />
-            </div>
-          )}
-
-          {/* Analyze Button */}
-          <button
-            onClick={handleAnalyze}
-            disabled={loading}
-            style={{
-              ...styles.button,
-              opacity: loading ? 0.7 : 1,
-              cursor: loading ? 'not-allowed' : 'pointer'
-            }}
-          >
-            {loading ? (
-              <>
-                <span style={styles.spinner} />
-                Analyzing...
-              </>
-            ) : (
-              <>
-                <span style={styles.buttonIcon}>鉁?/span>
-                Start AI Analysis
-              </>
-            )}
-          </button>
-
-          {/* Error Message */}
-          {error && (
-            <div style={styles.errorBox}>
-              <span style={styles.errorIcon}>鈿?/span>
-              {error}
-            </div>
-          )}
-
-          {/* Results */}
-          {result && (
-            <div style={{
-              ...styles.resultCard,
-              animation: 'slideIn 0.5s ease-out'
-            }}>
-              <div style={styles.resultHeader}>
-                <h3 style={styles.resultTitle}>Analysis Complete</h3>
-                <span style={{
-                  ...styles.badge,
-                  background: `${getRiskColor(result.aiResult?.riskLevel)}20`,
-                  color: getRiskColor(result.aiResult?.riskLevel),
-                  borderColor: getRiskColor(result.aiResult?.riskLevel)
-                }}>
-                  {getRiskText(result.aiResult?.riskLevel)}
-                </span>
-              </div>
-
-              <div style={styles.metrics}>
-                <div style={styles.metric}>
-                  <span style={styles.metricValue}>{result.aiResult?.symmetry?.score}</span>
-                  <span style={styles.metricLabel}>Symmetry Score</span>
-                </div>
-                <div style={styles.metric}>
-                  <span style={styles.metricValue}>
-                    {Math.round(result.aiResult?.confidence * 100)}%
-                  </span>
-                  <span style={styles.metricLabel}>AI Confidence</span>
-                </div>
-                <div style={styles.metric}>
-                  <span style={{...styles.metricValue, color: result.aiResult?.redness?.detected ? '#ef4444' : '#10b981'}}>
-                    {result.aiResult?.redness?.detected ? 'Yes' : 'No'}
-                  </span>
-                  <span style={styles.metricLabel}>Redness</span>
-                </div>
-              </div>
-
-              <div style={styles.summary}>
-                <p style={styles.summaryText}>{result.aiResult?.summary}</p>
-              </div>
-
-              <a href="/reports" style={styles.link}>
-                View Full Report 鈫?              </a>
-            </div>
-          )}
-        </div>
-      </main>
-
-      {/* Footer */}
-      <footer style={styles.footer}>
-        <p style={styles.footerText}>
-          Powered by Advanced AI 鈥?Secure & HIPAA Compliant
-        </p>
-      </footer>
-
-      <style jsx global>{`
-        @keyframes gradient {
-          0%, 100% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-        }
-        @keyframes slideIn {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
-    </div>
-  );
-}
-
 const styles: Record<string, React.CSSProperties> = {
   container: {
     minHeight: '100vh',
@@ -499,3 +252,233 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: 14,
   },
 };
+
+export default function Home() {
+  const [videoUrl, setVideoUrl] = useState(
+    process.env.NEXT_PUBLIC_DEMO_VIDEO_URL || 
+    'https://videos.pexels.com/video-files/10677463/10677463-hd_1920_1080_30fps.mp4'
+  );
+  const [patientId, setPatientId] = useState('P001');
+  const [description, setDescription] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<any>(null);
+  const [error, setError] = useState('');
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const handleAnalyze = async () => {
+    setLoading(true);
+    setError('');
+    setResult(null);
+
+    try {
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ videoUrl, patientId, description }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setResult(data.data);
+      } else {
+        setError(data.error || 'Analysis failed');
+      }
+    } catch (err) {
+      setError('Network error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getRiskColor = (level: string) => {
+    switch (level) {
+      case 'high': return '#ef4444';
+      case 'medium': return '#f59e0b';
+      case 'low': return '#10b981';
+      default: return '#6b7280';
+    }
+  };
+
+  const getRiskText = (level: string) => {
+    switch (level) {
+      case 'high': return 'High Risk';
+      case 'medium': return 'Medium Risk';
+      case 'low': return 'Low Risk';
+      default: return 'Unknown';
+    }
+  };
+
+  return (
+    <div style={styles.container}>
+      <div style={styles.bgAnimation} />
+      
+      <header style={styles.header}>
+        <div style={styles.logo}>
+          <span style={styles.logoIcon}>馃敩</span>
+          <span style={styles.logoText}>MediVision AI</span>
+        </div>
+        <nav style={styles.nav}>
+          <a href="/" style={{...styles.navLink, color: '#60a5fa'}}>Analysis</a>
+          <a href="/reports" style={styles.navLink}>Reports</a>
+        </nav>
+      </header>
+
+      <main style={styles.main}>
+        <div style={{
+          ...styles.card,
+          opacity: mounted ? 1 : 0,
+          transform: mounted ? 'translateY(0)' : 'translateY(20px)',
+          transition: 'all 0.6s ease-out'
+        }}>
+          
+          <div style={styles.titleSection}>
+            <h1 style={styles.title}>
+              AI-Powered
+              <span style={styles.titleGradient}> Medical Analysis</span>
+            </h1>
+            <p style={styles.subtitle}>
+              Advanced facial analysis for post-operative recovery assessment
+            </p>
+          </div>
+
+          <div style={styles.formGrid}>
+            <div style={styles.inputGroup}>
+              <label style={styles.label}>Patient ID</label>
+              <input
+                type="text"
+                value={patientId}
+                onChange={(e) => setPatientId(e.target.value)}
+                style={styles.input}
+                placeholder="Enter patient identifier"
+              />
+            </div>
+
+            <div style={{...styles.inputGroup, gridColumn: 'span 2'}}>
+              <label style={styles.label}>Video Source URL</label>
+              <input
+                type="text"
+                value={videoUrl}
+                onChange={(e) => setVideoUrl(e.target.value)}
+                style={styles.input}
+                placeholder="https://example.com/video.mp4"
+              />
+            </div>
+
+            <div style={{...styles.inputGroup, gridColumn: 'span 2'}}>
+              <label style={styles.label}>Clinical Notes (Optional)</label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                style={{...styles.input, minHeight: 80, resize: 'vertical'}}
+                placeholder="Post-operative day 3, patient reports mild discomfort..."
+              />
+            </div>
+          </div>
+
+          {videoUrl && (
+            <div style={{
+              ...styles.videoContainer,
+              opacity: mounted ? 1 : 0,
+              transition: 'opacity 0.8s ease-out 0.2s'
+            }}>
+              <video
+                src={videoUrl}
+                controls
+                style={styles.video}
+              />
+            </div>
+          )}
+
+          <button
+            onClick={handleAnalyze}
+            disabled={loading}
+            style={{
+              ...styles.button,
+              opacity: loading ? 0.7 : 1,
+              cursor: loading ? 'not-allowed' : 'pointer'
+            }}
+          >
+            {loading ? (
+              <>
+                <span style={styles.spinner} />
+                Analyzing...
+              </>
+            ) : (
+              <>
+                <span style={styles.buttonIcon}>鉁?/span>
+                Start AI Analysis
+              </>
+            )}
+          </button>
+
+          {error && (
+            <div style={styles.errorBox}>
+              <span style={styles.errorIcon}>鈿?/span>
+              {error}
+            </div>
+          )}
+
+          {result && (
+            <div style={styles.resultCard}>
+              <div style={styles.resultHeader}>
+                <h3 style={styles.resultTitle}>Analysis Complete</h3>
+                <span style={{
+                  ...styles.badge,
+                  background: `${getRiskColor(result.aiResult?.riskLevel)}20`,
+                  color: getRiskColor(result.aiResult?.riskLevel),
+                  borderColor: getRiskColor(result.aiResult?.riskLevel)
+                }}>
+                  {getRiskText(result.aiResult?.riskLevel)}
+                </span>
+              </div>
+
+              <div style={styles.metrics}>
+                <div style={styles.metric}>
+                  <span style={styles.metricValue}>{result.aiResult?.symmetry?.score}</span>
+                  <span style={styles.metricLabel}>Symmetry Score</span>
+                </div>
+                <div style={styles.metric}>
+                  <span style={styles.metricValue}>
+                    {Math.round(result.aiResult?.confidence * 100)}%
+                  </span>
+                  <span style={styles.metricLabel}>AI Confidence</span>
+                </div>
+                <div style={styles.metric}>
+                  <span style={{...styles.metricValue, color: result.aiResult?.redness?.detected ? '#ef4444' : '#10b981'}}>
+                    {result.aiResult?.redness?.detected ? 'Yes' : 'No'}
+                  </span>
+                  <span style={styles.metricLabel}>Redness</span>
+                </div>
+              </div>
+
+              <div style={styles.summary}>
+                <p style={styles.summaryText}>{result.aiResult?.summary}</p>
+              </div>
+
+              <a href="/reports" style={styles.link}>
+                View Full Report 鈫?              </a>
+            </div>
+          )}
+        </div>
+      </main>
+
+      <footer style={styles.footer}>
+        <p style={styles.footerText}>
+          Powered by Advanced AI 鈥?Secure & HIPAA Compliant
+        </p>
+      </footer>
+
+      <style jsx global>{`
+        @keyframes gradient {
+          0%, 100% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+        }
+      `}</style>
+    </div>
+  );
+}
