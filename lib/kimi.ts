@@ -86,7 +86,7 @@ Notes:
 
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 55000); // 55 second timeout (Vercel max ~60s)
     
     console.log('Sending request to Kimi API...');
     
