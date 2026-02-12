@@ -1,6 +1,6 @@
 'use client';
 
-// Build: v2 - inline styles only
+// Build: v4 - Chinese UI
 import { useState } from 'react';
 
 export default function Home() {
@@ -30,10 +30,10 @@ export default function Home() {
       if (data.success) {
         setResult(data.data);
       } else {
-        setError(data.error || 'Analysis failed');
+        setError(data.error || '分析失败');
       }
     } catch (err) {
-      setError('Network error');
+      setError('网络错误');
     } finally {
       setLoading(false);
     }
@@ -50,20 +50,20 @@ export default function Home() {
 
   const getRiskText = (level: string) => {
     switch (level) {
-      case 'high': return 'High Risk';
-      case 'medium': return 'Medium Risk';
-      case 'low': return 'Low Risk';
-      default: return 'Unknown';
+      case 'high': return '高风险';
+      case 'medium': return '中风险';
+      case 'low': return '低风险';
+      default: return '未知';
     }
   };
 
   return (
     <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)', color: '#fff', fontFamily: 'system-ui, sans-serif' }}>
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 40px', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-        <div style={{ fontSize: '24px', fontWeight: 'bold' }}>🔬 MediVision AI</div>
+        <div style={{ fontSize: '24px', fontWeight: 'bold' }}>🔬 医美AI分析系统</div>
         <nav style={{ display: 'flex', gap: '20px' }}>
-          <a href="/" style={{ color: '#60a5fa', textDecoration: 'none' }}>Analysis</a>
-          <a href="/reports" style={{ color: '#94a3b8', textDecoration: 'none' }}>Reports</a>
+          <a href="/" style={{ color: '#60a5fa', textDecoration: 'none' }}>开始分析</a>
+          <a href="/reports" style={{ color: '#94a3b8', textDecoration: 'none' }}>查看报告</a>
         </nav>
       </header>
 
@@ -71,15 +71,15 @@ export default function Home() {
         <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '20px', padding: '40px', border: '1px solid rgba(255,255,255,0.1)' }}>
           
           <h1 style={{ textAlign: 'center', fontSize: '36px', marginBottom: '10px' }}>
-            AI-Powered <span style={{ color: '#60a5fa' }}>Medical Analysis</span>
+            AI <span style={{ color: '#60a5fa' }}>医美术后分析</span>
           </h1>
           <p style={{ textAlign: 'center', color: '#94a3b8', marginBottom: '40px' }}>
-            Advanced facial analysis for post-operative recovery
+            智能面部术后恢复评估系统
           </p>
 
           <div style={{ display: 'grid', gap: '20px', marginBottom: '30px' }}>
             <div>
-              <label style={{ display: 'block', marginBottom: '8px', color: '#cbd5e1' }}>Patient ID</label>
+              <label style={{ display: 'block', marginBottom: '8px', color: '#cbd5e1' }}>患者编号</label>
               <input
                 type="text"
                 value={patientId}
@@ -89,7 +89,7 @@ export default function Home() {
             </div>
 
             <div>
-              <label style={{ display: 'block', marginBottom: '8px', color: '#cbd5e1' }}>Video URL</label>
+              <label style={{ display: 'block', marginBottom: '8px', color: '#cbd5e1' }}>视频地址</label>
               <input
                 type="text"
                 value={videoUrl}
@@ -99,7 +99,7 @@ export default function Home() {
             </div>
 
             <div>
-              <label style={{ display: 'block', marginBottom: '8px', color: '#cbd5e1' }}>Clinical Notes (Optional)</label>
+              <label style={{ display: 'block', marginBottom: '8px', color: '#cbd5e1' }}>临床备注（选填）</label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -129,7 +129,7 @@ export default function Home() {
               cursor: loading ? 'not-allowed' : 'pointer'
             }}
           >
-            {loading ? 'Analyzing...' : 'Start AI Analysis'}
+            {loading ? '分析中...' : '开始AI分析'}
           </button>
 
           {error && (
@@ -141,7 +141,7 @@ export default function Home() {
           {result && (
             <div style={{ marginTop: '30px', padding: '24px', background: 'rgba(16, 185, 129, 0.1)', borderRadius: '12px', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <h3 style={{ margin: 0, color: '#34d399' }}>Analysis Complete</h3>
+                <h3 style={{ margin: 0, color: '#34d399' }}>分析完成</h3>
                 <span style={{ 
                   padding: '6px 12px', 
                   borderRadius: '20px', 
@@ -157,23 +157,23 @@ export default function Home() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '20px' }}>
                 <div style={{ textAlign: 'center', padding: '16px', background: 'rgba(0,0,0,0.2)', borderRadius: '8px' }}>
                   <div style={{ fontSize: '28px', fontWeight: 'bold' }}>{result.aiResult?.symmetry?.score}</div>
-                  <div style={{ fontSize: '12px', color: '#94a3b8' }}>Symmetry</div>
+                  <div style={{ fontSize: '12px', color: '#94a3b8' }}>面部对称性</div>
                 </div>
                 <div style={{ textAlign: 'center', padding: '16px', background: 'rgba(0,0,0,0.2)', borderRadius: '8px' }}>
                   <div style={{ fontSize: '28px', fontWeight: 'bold' }}>{Math.round(result.aiResult?.confidence * 100)}%</div>
-                  <div style={{ fontSize: '12px', color: '#94a3b8' }}>Confidence</div>
+                  <div style={{ fontSize: '12px', color: '#94a3b8' }}>AI置信度</div>
                 </div>
                 <div style={{ textAlign: 'center', padding: '16px', background: 'rgba(0,0,0,0.2)', borderRadius: '8px' }}>
                   <div style={{ fontSize: '28px', fontWeight: 'bold', color: result.aiResult?.redness?.detected ? '#ef4444' : '#10b981' }}>
-                    {result.aiResult?.redness?.detected ? 'Yes' : 'No'}
+                    {result.aiResult?.redness?.detected ? '有' : '无'}
                   </div>
-                  <div style={{ fontSize: '12px', color: '#94a3b8' }}>Redness</div>
+                  <div style={{ fontSize: '12px', color: '#94a3b8' }}>红肿检测</div>
                 </div>
               </div>
 
               <p style={{ color: '#e2e8f0', marginBottom: '16px' }}>{result.aiResult?.summary}</p>
               
-              <a href="/reports" style={{ color: '#60a5fa', textDecoration: 'none' }}>View Full Report →</a>
+              <a href="/reports" style={{ color: '#60a5fa', textDecoration: 'none' }}>查看完整报告 →</a>
             </div>
           )}
         </div>
