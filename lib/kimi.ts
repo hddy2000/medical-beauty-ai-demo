@@ -27,17 +27,19 @@ export async function analyzeWithKimi(videoUrl: string, patientDesc: string): Pr
     throw new Error('KIMI_API_KEY not set');
   }
 
-  const prompt = `浣犳槸涓€浣嶄笓涓氱殑鍖荤編鏈悗鎭㈠璇勪及AI鍔╂墜銆傝鍩轰簬浠ヤ笅淇℃伅杩涜鍒嗘瀽锛?
-銆愯棰戜俊鎭€?- 瑙嗛URL: ${videoUrl}
-- 鎮ｈ€呮弿杩? ${patientDesc || '鏃?}
+  const prompt = `You are a professional medical beauty post-operative recovery assessment AI assistant. Please analyze based on the following information:
 
-璇锋彁渚涗互涓婮SON鏍煎紡鐨勫垎鏋愮粨鏋滐紙鍙繑鍥濲SON锛屼笉瑕佹湁鍏朵粬鏂囧瓧锛夛細
+[Video Information]
+- Video URL: ${videoUrl}
+- Patient Description: ${patientDesc || 'None'}
+
+Please provide analysis results in the following JSON format (return JSON only, no other text):
 {
-  "summary": "鎬讳綋璇勪及鎽樿锛?0瀛椾互鍐咃級",
+  "summary": "Overall assessment summary (within 50 characters)",
   "symmetry": {
     "score": 85,
     "status": "normal",
-    "description": "闈㈤儴瀵圭О鎬ц瘎浼?
+    "description": "Facial symmetry assessment"
   },
   "redness": {
     "detected": false,
@@ -53,9 +55,11 @@ export async function analyzeWithKimi(videoUrl: string, patientDesc: string): Pr
   "needReview": false
 }
 
-娉ㄦ剰锛?1. riskLevel 鍙兘鏄?low銆乵edium銆乭igh 涔嬩竴
-2. severity 鍙兘鏄?none銆乵ild銆乵oderate銆乻evere 涔嬩竴
-3. confidence 鏄?0-1 涔嬮棿鐨勬暟瀛?4. needReview 琛ㄧず鏄惁闇€瑕佷汉宸ュ鏍竊;
+Notes:
+1. riskLevel can only be low, medium, or high
+2. severity can only be none, mild, moderate, or severe
+3. confidence is a number between 0-1
+4. needReview indicates whether manual review is required`;
 
   const response = await fetch(KIMI_API_URL, {
     method: 'POST',
@@ -68,7 +72,7 @@ export async function analyzeWithKimi(videoUrl: string, patientDesc: string): Pr
       messages: [
         {
           role: 'system',
-          content: '浣犳槸涓€浣嶄笓涓氱殑鍖荤編鏈悗鎭㈠璇勪及AI鍔╂墜锛屾搮闀垮垎鏋愰潰閮ㄥ绉版€с€佺孩鑲裤€佽偪鑳€绛夋寚鏍囥€?
+          content: 'You are a professional medical beauty post-operative recovery assessment AI assistant, specializing in analyzing facial symmetry, redness, swelling and other indicators.'
         },
         {
           role: 'user',
@@ -88,7 +92,7 @@ export async function analyzeWithKimi(videoUrl: string, patientDesc: string): Pr
   const data = await response.json();
   const content = data.choices[0]?.message?.content;
 
-  // 鎻愬彇 JSON
+  // Extract JSON
   const jsonMatch = content.match(/\{[\s\S]*\}/);
   if (jsonMatch) {
     return JSON.parse(jsonMatch[0]);
